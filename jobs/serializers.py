@@ -6,11 +6,14 @@ from job_forms.serializers import JobFormSerializer
 
 
 class JobCategorySerializer(serializers.ModelSerializer):
-    jobs_count = serializers.IntegerField(read_only=True)
+    jobs_count = serializers.SerializerMethodField()
     
     class Meta:
         model = JobCategory
         fields = ['id', 'name', 'slug', 'description', 'icon', 'is_active', 'jobs_count']
+    
+    def get_jobs_count(self, obj):
+        return obj.jobs.filter(is_active=True).count()
 
 
 class JobListSerializer(serializers.ModelSerializer):
