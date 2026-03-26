@@ -50,4 +50,9 @@ __pycache__/
 *$py.class
 .env
 venv/
-env/
+env/
+.venv/
+__pycache__/
+*.pyc
+db.sqlite3
+.env

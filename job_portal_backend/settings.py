@@ -15,25 +15,12 @@ import os
 from urllib.parse import urlparse
 from datetime import timedelta
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# settings.py
-# ALLOW_UNICODE_SLUGS = True
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-your-secret-key-here'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key")
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = ['*']
-
-
-# Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -52,7 +39,6 @@ INSTALLED_APPS = [
     'applications',
     'core',
     'job_forms',
-
     'drf_spectacular',
     'drf_spectacular_sidecar',
 ]
@@ -88,37 +74,27 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'job_portal_backend.wsgi.application'
 
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-# db_url = "postgresql://postgres:qwe123@localhost:5433/twthf"  # e.g. 'postgres://user:pass@host:5432/dbname'
-# db_url = "postgresql://postgres:YqerWWmAaEGupuVmVGKMrTnMmzJbdSVL@yamabiko.proxy.rlwy.net:45416/railway"  # e.g. 'postgres://user:pass@host:5432/dbname'
-
-db_url = "postgresql://postgres:rQBcePjNhKuNRNAXqqQoTFBkQVbAxasb@interchange.proxy.rlwy.net:13518/railway"  # e.g. 'postgres://user:pass@host:5432/dbname'
-
-parsed_url = urlparse(db_url)
-DATABASES = {
-        'default': {
-            'ENGINE':'django.db.backends.postgresql',
-            'NAME': parsed_url.path[1:],  # remove leading /
-            'USER': parsed_url.username,
-            'PASSWORD': parsed_url.password,
-            'HOST': parsed_url.hostname,
-            'PORT': parsed_url.port,
+if DATABASE_URL:
+    parsed_url = urlparse(DATABASE_URL)
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": parsed_url.path[1:],
+            "USER": parsed_url.username,
+            "PASSWORD": parsed_url.password,
+            "HOST": parsed_url.hostname,
+            "PORT": parsed_url.port,
         }
     }
-
-
-# Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -135,21 +111,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
-
 LANGUAGE_CODE = 'ar'
-
 TIME_ZONE = 'Asia/Riyadh'
-
 USE_I18N = True
-
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
@@ -157,22 +122,15 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS settings
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-# Custom user model
 AUTH_USER_MODEL = 'accounts.User'
-# REST Framework settings
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        # 'rest_framework.authentication.TokenAuthentication',
-        # 'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
@@ -180,7 +138,6 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-
     'PAGE_SIZE': 50,
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
@@ -189,22 +146,19 @@ REST_FRAMEWORK = {
     ],
 }
 
-
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),   # token expires every 30 mins
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=2),      # refresh token validity
-    "ROTATE_REFRESH_TOKENS": True,                   # optional: issue new refresh
-    "BLACKLIST_AFTER_ROTATION": True,                # blacklist old refresh
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=2),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
 }
 
-
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Tawzif  API',
+    'TITLE': 'Tawzif API',
     'DESCRIPTION': 'مرحباً بك في API منصة التوظيف',
     'VERSION': '1.0.0',
     'CONTACT': {'email': 'support@Tawzif.com'},
     'SERVE_INCLUDE_SCHEMA': False,
 }
 
-GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'AIzaSyB0DNcsPqUFLvmhjIGh78y-4h-k8NtfuGA')
-
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
