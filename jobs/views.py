@@ -207,30 +207,26 @@ class MyJobsView(generics.ListAPIView):
 
 
 class JobCategoryListView(generics.ListAPIView):
-    """قائمة فئات الوظائف"""
-    queryset = JobCategory.objects.filter(is_active=True)
+    """قائمة فئات الوظائف مع عدد الوظائف النشطة في كل فئة"""
     serializer_class = JobCategorySerializer
     permission_classes = [permissions.AllowAny]
-    pagination_class = None
+    
+    def get_queryset(self):
+        """
+        تحسين الاستعلام ليقوم بحساب عدد الوظائف النشطة لكل فئة
+        مباشرة من قاعدة البيانات لتجنب مشكلة N+1.
+        """
+        return JobCategory.objects.filter(is_active=True).annotate(
+            jobs_count=Count('jobs', filter=Q(jobs__is_active=True, jobs__application_deadline__gte=timezone.now()))
+        ).order_by('-jobs_count', 'name')
 
-
-@api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated])
-def bookmark_job(request, job_id):
+class JobBookmarkView(generics.CreateAPIView):
     """حفظ/إلغاء حفظ وظيفة"""
-    try:
-        job = Job.objects.get(id=job_id, is_active=True)
-    except Job.DoesNotExist:
-        return Response({'error': 'الوظيفة غير موجودة'}, status=status.HTTP_404_NOT_FOUND)
+    serializer_class = JobBookmarkSerializer
+    permission_classes = [permissions.IsAuthenticated]
     
-    bookmark, created = JobBookmark.objects.get_or_create(user=request.user, job=job)
-    
-    if not created:
-        bookmark.delete()
-        return Response({'message': 'تم إلغاء حفظ الوظيفة'}, status=status.HTTP_200_OK)
-    
-    return Response({'message': 'تم حفظ الوظيفة'}, status=status.HTTP_201_CREATED)
-
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 class BookmarkedJobsView(generics.ListAPIView):
     """الوظائف المحفوظة"""
@@ -248,7 +244,6 @@ class JobAlertListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         return JobAlert.objects.filter(user=self.request.user).order_by('-created_at')
 
-
 class JobAlertDetailView(generics.RetrieveUpdateDestroyAPIView):
     """تفاصيل وتحديث وحذف تنبيه وظيفة"""
     serializer_class = JobAlertSerializer
@@ -256,7 +251,6 @@ class JobAlertDetailView(generics.RetrieveUpdateDestroyAPIView):
     
     def get_queryset(self):
         return JobAlert.objects.filter(user=self.request.user)
-
 
 @api_view(['GET'])
 @permission_classes([permissions.AllowAny])
