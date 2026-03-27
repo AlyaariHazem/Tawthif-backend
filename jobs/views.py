@@ -26,7 +26,13 @@ class JobListView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     pagination_class = JobPagination
-    filterset_fields = ['job_type', 'experience_level', 'city', 'category', 'company']
+    filterset_fields = {
+        'job_type': ['exact'],
+        'experience_level': ['exact'],
+        'city': ['exact'],
+        'category': ['exact'],
+        'company': ['exact'],
+    }
     search_fields = ['title', 'description', 'skills', 'company__name']
     ordering_fields = ['created_at', 'views_count', 'salary_min']
     ordering = ['-created_at']
