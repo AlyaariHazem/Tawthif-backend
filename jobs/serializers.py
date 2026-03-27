@@ -30,8 +30,7 @@ class JobListSerializer(serializers.ModelSerializer):
             'is_salary_negotiable', 'application_deadline', 'is_active', 
             'is_featured', 'is_urgent', 'views_count', 'applications_count',
             'is_bookmarked', 'created_at','application_method', 'custom_form',
-            'application_template', 'external_application_url', 'application_email',
-            'is_ai_summary_enabled', 'ai_summary'
+            'application_template', 'external_application_url', 'application_email'
         ]
     
     def get_is_bookmarked(self, obj):
@@ -78,11 +77,9 @@ class JobCreateSerializer(serializers.ModelSerializer):
             'is_salary_negotiable', 'application_deadline',
             'contact_email', 'contact_phone', 'is_featured', 'is_urgent', 'is_active',
             'application_method', 'custom_form', 'application_template', 
-            'external_application_url', 'application_email',
-      
-           'is_ai_summary_enabled', 'ai_summary'
+            'external_application_url', 'application_email'
         ]
-        read_only_fields = ['ai_summary']
+        read_only_fields = []
     
     def validate_company(self, value):
         request = self.context.get('request')

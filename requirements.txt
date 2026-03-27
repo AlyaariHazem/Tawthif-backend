@@ -13,4 +13,3 @@ djangorestframework-simplejwt
 requests
 cloudinary 
 django-cloudinary-storage
-google-genai
